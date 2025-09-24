@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+#Cypress test integration and resume templates too:
 
-## Getting Started
+## 🏁 Setup & Basics
+### Install lib
+npm install --save-dev cypress
 
-First, run the development server:
+### Add to package.json/scripts
+"cy:open": "cypress open"
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Open testing
+npm run cy:open
+In the opened box click E2E and do the basic setup.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Go to cypress/e2e/spec.cy.ts
+All the tests are written here
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cypress commands:
+describe('My Test Suite', () => {
+  before(() => { /* runs once before all tests */ })
+  beforeEach(() => { /* runs before each test */ })
+  after(() => { /* runs once after all tests */ })
+  afterEach(() => { /* runs after each test */ })
 
-## Learn More
+  it('should do something', () => {
+    // test code here
+  })
+})
 
-To learn more about Next.js, take a look at the following resources:
+### Navigation
+cy.visit('/home')            // Visit a page
+cy.reload()                  // Reload current page
+cy.go('back') or cy.go(-1)   // Go back one page
+cy.go('forward') or cy.go(1) // Go forward
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+cy.url().should('include', '/dashboard')
+cy.location('pathname').should('eq', '/home')
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Getting elements
 
-## Deploy on Vercel
+<button data-cy="submit-btn">Submit</button>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+cy.get('[data-cy="submit-btn"]')   // By custom attribute
+cy.get('.className')               // By class
+cy.get('#idName')                  // By id
+cy.contains('button', 'Submit')    // By text inside element
+cy.find('input')                   // Find child inside parent
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Actions
+cy.get('input[name="email"]').type('test@email.com')
+cy.get('input').clear()
+cy.get('button').click()
+cy.get('input[type="checkbox"]').check()
+cy.get('input[type="checkbox"]').uncheck()
+cy.get('select').select('Option 1')
+
+cy.get('button').click({ force: true })   // Force click even if hidden
+cy.get('input').type('Hello{enter}')      // Press Enter
+
+### Checks
+
+cy.get('h1').should('contain.text', 'Welcome')
+cy.get('input').should('have.value', 'Test')
+cy.get('.alert').should('be.visible')
+cy.get('.loader').should('not.exist')
+
+cy.get('button')
+  .should('be.visible')
+  .and('have.class', 'btn-primary')
+
+cy.wait(1000)   // Wait 1s (not recommended often)
+cy.intercept('/api/data').as('getData')
+cy.wait('@getData') // Wait for API call
+
+### 🌐 Network Requests
+
+cy.intercept('GET', '/api/users', { fixture: 'users.json' }).as('users')
+cy.visit('/users')
+cy.wait('@users').its('response.statusCode').should('eq', 200)
